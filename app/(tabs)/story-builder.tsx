@@ -4,7 +4,8 @@ import {
   Text, 
   StyleSheet, 
   ScrollView, 
-  TouchableOpacity 
+  TouchableOpacity,
+  Image
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { 
@@ -61,8 +62,14 @@ export default function StoryBuilderTab() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Story Builder</Text>
-        <Text style={styles.headerSubtitle}>Create with AI</Text>
+        <View style={styles.headerContent}>
+          <Text style={styles.headerTitle}>Story Builder</Text>
+          <Text style={styles.headerSubtitle}>Create with AI</Text>
+        </View>
+        <Image 
+          source={require('@/assets/images/ChatGPT Image Jun 29, 2025, 07_02_37 PM.png')}
+          style={styles.logoImage}
+        />
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
@@ -209,14 +216,25 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingHorizontal: 24,
     paddingBottom: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
     borderBottomWidth: 1,
     borderBottomColor: '#E3D9C3',
+  },
+  logoImage: {
+    width: 120,
+    height: 34,
+    resizeMode: 'contain',
+    tintColor: '#4B2E1E',
+  },
+  headerContent: {
+    flex: 1,
   },
   headerTitle: {
     fontFamily: 'Playfair-Bold',
     fontSize: 19.6,
     color: '#4B2E1E',
-    marginBottom: 4,
   },
   headerSubtitle: {
     fontFamily: 'Cormorant-Regular',

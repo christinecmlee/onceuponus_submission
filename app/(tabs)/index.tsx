@@ -106,13 +106,11 @@ export default function InvitesTab() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitle}>Today's Page</Text>
-          <Image 
-            source={require('@/assets/images/ChatGPT Image Jun 29, 2025, 07_02_37 PM.png')}
-            style={styles.logoImage}
-          />
-        </View>
+        <Text style={styles.headerTitle}>Today's Page</Text>
+        <Image 
+          source={require('@/assets/images/ChatGPT Image Jun 29, 2025, 07_02_37 PM.png')}
+          style={styles.logoImage}
+        />
         {user?.isPremium && (
           <View style={styles.premiumBadge}>
             <Text style={styles.premiumBadgeText}>Premium Member</Text>
@@ -265,17 +263,15 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingHorizontal: 24,
     paddingBottom: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: '#E3D9C3',
   },
-  headerTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
   logoImage: {
-    width: 100,
-    height: 28,
-    marginLeft: 12,
+    width: 120,
+    height: 34,
     resizeMode: 'contain',
     tintColor: '#4B2E1E',
   },

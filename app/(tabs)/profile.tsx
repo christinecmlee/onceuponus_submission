@@ -5,7 +5,8 @@ import {
   StyleSheet, 
   ScrollView, 
   TouchableOpacity,
-  RefreshControl
+  RefreshControl,
+  Image
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, { FadeInUp } from 'react-native-reanimated';
@@ -73,6 +74,10 @@ export default function ProfileTab() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Your Literary Journey</Text>
+        <Image 
+          source={require('@/assets/images/ChatGPT Image Jun 29, 2025, 07_02_37 PM.png')}
+          style={styles.logoImage}
+        />
       </View>
 
       <ScrollView 
@@ -289,6 +294,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: '#E3D9C3',
+  },
+  logoImage: {
+    width: 120,
+    height: 34,
+    resizeMode: 'contain',
+    tintColor: '#4B2E1E',
   },
   headerTitle: {
     fontFamily: 'Playfair-Bold',
