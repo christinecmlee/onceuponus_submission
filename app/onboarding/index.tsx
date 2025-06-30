@@ -71,17 +71,6 @@ export default function OnboardingIntro() {
     }
   };
 
-  useEffect(() => {
-    if (currentWordIndex > 0 && currentWordIndex < words.length) {
-      animateWords();
-    } else if (currentWordIndex >= words.length) {
-      // Final navigation with a delay
-      setTimeout(() => {
-        router.push('/onboarding/phone');
-      }, 1000);
-    }
-  }, [currentWordIndex]);
-
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
   }));
