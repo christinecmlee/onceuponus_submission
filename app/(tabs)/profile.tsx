@@ -19,6 +19,7 @@ import {
 } from 'lucide-react-native';
 import { useUser } from '@/contexts/UserContext';
 import { LITERARY_TYPES } from '@/data/quiz';
+import { MockRevenueCatService } from '@/services/MockRevenueCatService';
 
 export default function ProfileTab() {
   const [refreshing, setRefreshing] = React.useState(false);
@@ -31,6 +32,24 @@ export default function ProfileTab() {
   // Get upcoming events from user context, fallback to empty array
   const upcomingEvents = user?.upcomingEvents || [];
 
+  const handleResetData = async () => {
+    try {
+      console.log('Resetting all app data...');
+      
+      // Reset mock RevenueCat subscription status
+      MockRevenueCatService.resetMockSubscription();
+      
+      // Clear all user data from context and storage
+      await clearUserData();
+      
+      // Navigate back to onboarding
+      router.replace('/onboarding');
+      
+      console.log('App data reset complete');
+    } catch (error) {
+      console.error('Error resetting app data:', error);
+    }
+  };
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
     
@@ -206,6 +225,21 @@ export default function ProfileTab() {
           </View>
         </Animated.View>
 
+        {/* Reset Data Section (for testing) */}
+        <Animated.View 
+          entering={FadeInUp.delay(user?.isPremium ? 1100 : 1000).duration(600)}
+          style={styles.resetSection}
+        >
+          <TouchableOpacity 
+            style={styles.resetButton}
+            onPress={handleResetData}
+          >
+            <Text style={styles.resetButtonText}>Reset App Data (Testing)</Text>
+          </TouchableOpacity>
+          <Text style={styles.resetWarning}>
+            This will clear all your data and return you to the welcome screen
+          </Text>
+        </Animated.View>
       </ScrollView>
     </View>
   );
@@ -501,5 +535,29 @@ const styles = StyleSheet.create({
     fontFamily: 'Literata-Regular',
     fontSize: 12,
     color: '#4B2E1E',
+  },
+  resetSection: {
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+  },
+  resetButton: {
+    backgroundColor: '#DC2626',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  resetButtonText: {
+    fontFamily: 'Literata-SemiBold',
+    fontSize: 14,
+    color: '#FFFFFF',
+  },
+  resetWarning: {
+    fontFamily: 'Cormorant-Regular',
+    fontSize: 12,
+    color: '#5C3D2E',
+    textAlign: 'center',
+    lineHeight: 16,
   },
 });
