@@ -69,9 +69,32 @@ export default function ProfileTab() {
           />
         }
       >
+        {/* Premium Status Section */}
+        {user?.isPremium && (
+          <Animated.View 
+            entering={FadeInUp.delay(100).duration(600)}
+            style={styles.premiumSection}
+          >
+            <View style={styles.premiumCard}>
+              <View style={styles.premiumHeader}>
+                <Star size={24} color="#F59E0B" />
+                <Text style={styles.premiumTitle}>Premium Member</Text>
+              </View>
+              <Text style={styles.premiumDescription}>
+                You have unlimited access to all literary events and early booking privileges.
+              </Text>
+              <View style={styles.premiumBenefits}>
+                <Text style={styles.premiumBenefitText}>✨ Free event attendance</Text>
+                <Text style={styles.premiumBenefitText}>⚡ Early booking access</Text>
+                <Text style={styles.premiumBenefitText}>🎯 Priority support</Text>
+              </View>
+            </View>
+          </Animated.View>
+        )}
+
         {/* Literary Type Section */}
         <Animated.View 
-          entering={FadeInUp.delay(200).duration(600)}
+          entering={FadeInUp.delay(user?.isPremium ? 300 : 200).duration(600)}
           style={styles.typeSection}
         >
           <View style={styles.typeCard}>
@@ -92,7 +115,7 @@ export default function ProfileTab() {
 
         {/* Upcoming Events */}
         <Animated.View 
-          entering={FadeInUp.delay(400).duration(600)}
+          entering={FadeInUp.delay(user?.isPremium ? 500 : 400).duration(600)}
           style={styles.section}
         >
           <View style={styles.sectionHeader}>
@@ -130,7 +153,7 @@ export default function ProfileTab() {
 
         {/* Authored Stories */}
         <Animated.View 
-          entering={FadeInUp.delay(600).duration(600)}
+          entering={FadeInUp.delay(user?.isPremium ? 700 : 600).duration(600)}
           style={styles.section}
         >
           <View style={styles.sectionHeader}>
@@ -161,7 +184,7 @@ export default function ProfileTab() {
 
         {/* Literary Insights */}
         <Animated.View 
-          entering={FadeInUp.delay(800).duration(600)}
+          entering={FadeInUp.delay(user?.isPremium ? 900 : 800).duration(600)}
           style={styles.section}
         >
           <Text style={styles.sectionTitle}>Your Literary Insights</Text>
@@ -210,6 +233,43 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  premiumSection: {
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+  },
+  premiumCard: {
+    backgroundColor: '#FEF3C7',
+    borderWidth: 2,
+    borderColor: '#F59E0B',
+    borderRadius: 16,
+    padding: 20,
+  },
+  premiumHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  premiumTitle: {
+    fontFamily: 'Playfair-SemiBold',
+    fontSize: 20,
+    color: '#92400E',
+    marginLeft: 12,
+  },
+  premiumDescription: {
+    fontFamily: 'Cormorant-Regular',
+    fontSize: 16,
+    color: '#92400E',
+    lineHeight: 22,
+    marginBottom: 16,
+  },
+  premiumBenefits: {
+    gap: 4,
+  },
+  premiumBenefitText: {
+    fontFamily: 'Literata-Regular',
+    fontSize: 14,
+    color: '#92400E',
   },
   typeSection: {
     paddingHorizontal: 24,

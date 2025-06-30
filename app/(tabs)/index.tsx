@@ -106,6 +106,11 @@ export default function InvitesTab() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Today's Chapter</Text>
+        {user?.isPremium && (
+          <View style={styles.premiumBadge}>
+            <Text style={styles.premiumBadgeText}>Premium Member</Text>
+          </View>
+        )}
         <Text style={styles.headerDate}>
           {new Date().toLocaleDateString('en-US', { 
             weekday: 'long', 
@@ -193,6 +198,13 @@ export default function InvitesTab() {
                   <CheckCircle size={20} color="#16A34A" />
                   <Text style={styles.registeredText}>You are in!</Text>
                 </View>
+              ) : user?.isPremium ? (
+                <TouchableOpacity 
+                  style={styles.premiumRsvpButton}
+                  onPress={handleRSVP}
+                >
+                  <Text style={styles.premiumRsvpButtonText}>Register (Free with Premium)</Text>
+                </TouchableOpacity>
               ) : (
                 <TouchableOpacity 
                   style={styles.rsvpButton}
@@ -202,6 +214,19 @@ export default function InvitesTab() {
                 </TouchableOpacity>
               )}
             </View>
+          </Animated.View>
+        )}
+        
+        {/* Premium Early Access Notice */}
+        {user?.isPremium && (
+          <Animated.View 
+            entering={FadeInUp.delay(500).duration(600)}
+            style={styles.earlyAccessCard}
+          >
+            <Text style={styles.earlyAccessTitle}>🌟 Premium Early Access</Text>
+            <Text style={styles.earlyAccessText}>
+              You have priority booking for all upcoming events. New events are announced to Premium members 24 hours before general availability.
+            </Text>
           </Animated.View>
         )}
 
@@ -395,6 +420,31 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#F7F2E7',
   },
+  premiumRsvpButton: {
+    backgroundColor: '#16A34A',
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  premiumRsvpButtonText: {
+    fontFamily: 'Literata-SemiBold',
+    fontSize: 16,
+    color: '#F7F2E7',
+  },
+  premiumBadge: {
+    backgroundColor: '#F59E0B',
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+    marginBottom: 8,
+  },
+  premiumBadgeText: {
+    fontFamily: 'Literata-SemiBold',
+    fontSize: 10,
+    color: '#FFFFFF',
+    textTransform: 'uppercase',
+  },
   registeredContainer: {
     backgroundColor: '#F0FDF4',
     paddingVertical: 14,
@@ -410,6 +460,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#15803D',
     marginLeft: 8,
+  },
+  earlyAccessCard: {
+    marginHorizontal: 24,
+    marginBottom: 20,
+    backgroundColor: '#FEF3C7',
+    borderWidth: 2,
+    borderColor: '#F59E0B',
+    borderRadius: 12,
+    padding: 16,
+  },
+  earlyAccessTitle: {
+    fontFamily: 'Literata-SemiBold',
+    fontSize: 16,
+    color: '#92400E',
+    marginBottom: 8,
+  },
+  earlyAccessText: {
+    fontFamily: 'Cormorant-Regular',
+    fontSize: 14,
+    color: '#92400E',
+    lineHeight: 18,
   },
   pastEventsSection: {
     paddingHorizontal: 24,
