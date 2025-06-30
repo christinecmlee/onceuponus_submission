@@ -105,11 +105,6 @@ export class MockRevenueCatService {
     // Simulate payment processing delay
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    // Simulate potential failure (10% chance)
-    if (Math.random() < 0.1) {
-      throw new Error('Payment failed. Please try again.');
-    }
-
     // Update mock subscription status
     mockSubscriptionStatus = true;
     mockSubscriptionDate = new Date().toISOString();
