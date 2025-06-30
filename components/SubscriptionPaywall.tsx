@@ -11,15 +11,7 @@ import {
   ActivityIndicator
 } from 'react-native';
 import Animated, { FadeInUp, FadeInDown } from 'react-native-reanimated';
-import { 
-  X, 
-  Crown, 
-  Calendar, 
-  Coffee, 
-  Star, 
-  Zap,
-  CheckCircle 
-} from 'lucide-react-native';
+import { X, Crown, Calendar, Coffee, Star, Zap, CircleCheck as CheckCircle } from 'lucide-react-native';
 import { useRevenueCat } from '@/hooks/useRevenueCat';
 
 const { width } = Dimensions.get('window');
