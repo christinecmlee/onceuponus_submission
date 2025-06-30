@@ -18,6 +18,7 @@ export interface User {
   literaryType?: string;
   city?: string;
   onboardingComplete: boolean;
+  isPremium?: boolean;
   upcomingEvents?: UpcomingEvent[];
   quizProgressCurrentQuestion?: number;
   quizProgressAnswers?: number[];
@@ -45,6 +46,7 @@ const createInitialUser = (): User => ({
   city: undefined,
   onboardingComplete: false,
   upcomingEvents: [],
+  isPremium: false,
   quizProgressCurrentQuestion: undefined,
   quizProgressAnswers: undefined,
 });

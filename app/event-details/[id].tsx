@@ -13,14 +13,16 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import Animated, { FadeInUp, FadeInDown } from 'react-native-reanimated';
 import { ArrowLeft, MapPin, Calendar, Clock, CreditCard, Users, CircleCheck as CheckCircle, CircleAlert as AlertCircle } from 'lucide-react-native';
 import { useUser } from '@/contexts/UserContext';
+import { MockRevenueCatService } from '@/services/MockRevenueCatService';
 
 const { width } = Dimensions.get('window');
 
 export default function EventDetails() {
   const router = useRouter();
-  const { user, addUpcomingEvent } = useUser();
+  const { user, addUpcomingEvent, updateUser } = useUser();
   const params = useLocalSearchParams();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showPremiumOption, setShowPremiumOption] = useState(false);
 
   // Parse event data from params
   const eventData = {
@@ -37,9 +39,17 @@ export default function EventDetails() {
   // Check if user is already registered for this event
   const isAlreadyRegistered = user?.upcomingEvents?.some(
     event => event.id === eventData.id
-  );
+  ) || false;
 
-  const handleRegisterAndPay = async () => {
+  // Check if user has premium access
+  const hasPremiumAccess = user?.isPremium || false;
+
+  useEffect(() => {
+    // Initialize mock RevenueCat service
+    MockRevenueCatService.initialize();
+  }, []);
+
+  const handleRegisterAndPay = async (usePremium = false) => {
     if (isAlreadyRegistered) {
       return;
     }
@@ -47,16 +57,19 @@ export default function EventDetails() {
     setIsProcessing(true);
 
     try {
-      // RevenueCat integration would go here
-      // Note: This requires local setup with Expo Dev Client
-      // For now, we'll simulate the payment process
-      
-      // TODO: Integrate RevenueCat for actual payments
-      // import Purchases from 'react-native-purchases';
-      // const purchaseResult = await Purchases.purchasePackage(package);
-      
-      // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      if (usePremium && !hasPremiumAccess) {
+        // Purchase premium subscription
+        console.log('Purchasing premium subscription...');
+        const purchaseResult = await MockRevenueCatService.purchasePackage('premium_monthly');
+        
+        // Update user with premium status
+        updateUser({ isPremium: true });
+        
+        console.log('Premium subscription purchased successfully:', purchaseResult);
+      } else if (!hasPremiumAccess && !usePremium) {
+        // Regular $25 event payment
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
 
       // Create event object for user's upcoming events
       const newEvent = {
@@ -72,12 +85,16 @@ export default function EventDetails() {
 
       if (wasAdded) {
         // Show success message
+        const successMessage = hasPremiumAccess || usePremium 
+          ? 'Registration successful! You\'re all set for this event with your premium membership.'
+          : 'Registration successful! You\'re all set for this event.';
+          
         if (Platform.OS === 'web') {
-          alert('Registration successful! You\'re all set for this event.');
+          alert(successMessage);
         } else {
           Alert.alert(
             'Registration Successful!',
-            'You\'re all set for this event. Check your profile for details.',
+            successMessage + ' Check your profile for details.',
             [{ text: 'OK', onPress: () => router.back() }]
           );
         }
@@ -91,10 +108,11 @@ export default function EventDetails() {
       }
     } catch (error) {
       console.error('Payment failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'There was an issue processing your payment. Please try again.';
       if (Platform.OS === 'web') {
-        alert('Payment failed. Please try again.');
+        alert(errorMessage);
       } else {
-        Alert.alert('Payment Failed', 'There was an issue processing your payment. Please try again.');
+        Alert.alert('Payment Failed', errorMessage);
       }
     } finally {
       setIsProcessing(false);
@@ -238,32 +256,83 @@ export default function EventDetails() {
             entering={FadeInUp.delay(1000).duration(600)}
             style={styles.paymentCard}
           >
-            <Text style={styles.sectionTitle}>Complete Registration</Text>
+            <Text style={styles.sectionTitle}>
+              {hasPremiumAccess ? 'Complete Registration' : 'Choose Your Option'}
+            </Text>
+            
+            {!hasPremiumAccess && (
+              <View style={styles.premiumOfferCard}>
+                <View style={styles.premiumHeader}>
+                  <Text style={styles.premiumBadge}>BEST VALUE</Text>
+                  <Text style={styles.premiumTitle}>Chapter & Verse Premium</Text>
+                  <Text style={styles.premiumPrice}>$30/month</Text>
+                </View>
+                
+                <View style={styles.premiumBenefits}>
+                  <View style={styles.benefitItem}>
+                    <CheckCircle size={16} color="#16A34A" />
+                    <Text style={styles.benefitText}>Unlimited event access</Text>
+                  </View>
+                  <View style={styles.benefitItem}>
+                    <CheckCircle size={16} color="#16A34A" />
+                    <Text style={styles.benefitText}>Early booking privileges</Text>
+                  </View>
+                  <View style={styles.benefitItem}>
+                    <CheckCircle size={16} color="#16A34A" />
+                    <Text style={styles.benefitText}>Priority support</Text>
+                  </View>
+                  <View style={styles.benefitItem}>
+                    <CheckCircle size={16} color="#16A34A" />
+                    <Text style={styles.benefitText}>Exclusive content access</Text>
+                  </View>
+                </View>
+                
+                <TouchableOpacity
+                  style={styles.premiumButton}
+                  onPress={() => handleRegisterAndPay(true)}
+                  disabled={isProcessing}
+                >
+                  <Text style={styles.premiumButtonText}>
+                    {isProcessing ? 'Processing...' : 'Get Premium & Register'}
+                  </Text>
+                </TouchableOpacity>
+                
+                <Text style={styles.orText}>or</Text>
+              </View>
+            )}
             
             <View style={styles.paymentSummary}>
               <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Event Ticket</Text>
-                <Text style={styles.summaryValue}>${eventData.price}.00</Text>
+                <Text style={styles.summaryLabel}>
+                  {hasPremiumAccess ? 'Event Access (Premium)' : 'Event Ticket'}
+                </Text>
+                <Text style={styles.summaryValue}>
+                  {hasPremiumAccess ? 'Free' : `$${eventData.price}.00`}
+                </Text>
               </View>
               <View style={styles.summaryDivider} />
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryTotal}>Total</Text>
-                <Text style={styles.summaryTotal}>${eventData.price}.00</Text>
+                <Text style={styles.summaryTotal}>
+                  {hasPremiumAccess ? 'Free' : `$${eventData.price}.00`}
+                </Text>
               </View>
             </View>
 
-            <View style={styles.paymentNote}>
+            {!hasPremiumAccess && (
+              <View style={styles.paymentNote}>
               <AlertCircle size={16} color="#A58E63" />
               <Text style={styles.paymentNoteText}>
-                Payment processed securely through RevenueCat
+                Payments processed securely through RevenueCat
               </Text>
-            </View>
+              </View>
+            )}
           </Animated.View>
         )}
       </ScrollView>
 
       {/* Bottom Action */}
-      {!isAlreadyRegistered && (
+      {!isAlreadyRegistered && (!showPremiumOption || hasPremiumAccess) && (
         <Animated.View
           entering={FadeInDown.delay(1200).duration(600)}
           style={styles.bottomAction}
@@ -271,14 +340,19 @@ export default function EventDetails() {
           <TouchableOpacity
             style={[
               styles.registerButton,
-              (isProcessing || isAlreadyRegistered) && styles.registerButtonDisabled
+              (isProcessing || isAlreadyRegistered) && styles.registerButtonDisabled,
+              hasPremiumAccess && styles.registerButtonPremium
             ]}
-            onPress={handleRegisterAndPay}
+            onPress={() => handleRegisterAndPay(false)}
             disabled={isProcessing || isAlreadyRegistered}
           >
             <CreditCard size={20} color="#F7F2E7" style={styles.buttonIcon} />
             <Text style={styles.registerButtonText}>
-              {isProcessing ? 'Processing...' : `Register & Pay $${eventData.price}`}
+              {isProcessing 
+                ? 'Processing...' 
+                : hasPremiumAccess 
+                ? 'Register (Free with Premium)' 
+                : `Register & Pay $${eventData.price}`}
             </Text>
           </TouchableOpacity>
         </Animated.View>
@@ -544,6 +618,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#A58E63',
     opacity: 0.6,
   },
+  registerButtonPremium: {
+    backgroundColor: '#16A34A',
+  },
   buttonIcon: {
     marginRight: 8,
   },
@@ -551,5 +628,70 @@ const styles = StyleSheet.create({
     fontFamily: 'Literata-SemiBold',
     fontSize: 16,
     color: '#F7F2E7',
+  },
+  premiumOfferCard: {
+    backgroundColor: '#FEF3C7',
+    borderWidth: 2,
+    borderColor: '#F59E0B',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 20,
+  },
+  premiumHeader: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  premiumBadge: {
+    backgroundColor: '#F59E0B',
+    color: '#FFFFFF',
+    fontFamily: 'Literata-Bold',
+    fontSize: 10,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  premiumTitle: {
+    fontFamily: 'Playfair-SemiBold',
+    fontSize: 20,
+    color: '#92400E',
+    marginBottom: 4,
+  },
+  premiumPrice: {
+    fontFamily: 'Literata-Bold',
+    fontSize: 24,
+    color: '#92400E',
+  },
+  premiumBenefits: {
+    marginBottom: 16,
+  },
+  benefitItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  benefitText: {
+    fontFamily: 'Cormorant-Regular',
+    fontSize: 14,
+    color: '#92400E',
+    marginLeft: 8,
+  },
+  premiumButton: {
+    backgroundColor: '#F59E0B',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  premiumButtonText: {
+    fontFamily: 'Literata-SemiBold',
+    fontSize: 14,
+    color: '#FFFFFF',
+  },
+  orText: {
+    fontFamily: 'Cormorant-Regular',
+    fontSize: 14,
+    color: '#92400E',
+    textAlign: 'center',
   },
 });
