@@ -11,16 +11,30 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import Animated, { FadeInUp, FadeInDown } from 'react-native-reanimated';
-import { ArrowLeft, MapPin, Calendar, Clock, CreditCard, Users, CircleCheck as CheckCircle, CircleAlert as AlertCircle } from 'lucide-react-native';
+import { 
+  ArrowLeft, 
+  MapPin, 
+  Calendar, 
+  Clock, 
+  CreditCard, 
+  Users, 
+  CircleCheck as CheckCircle, 
+  CircleAlert as AlertCircle,
+  Crown,
+  Coffee,
+  Star
+} from 'lucide-react-native';
 import { useUser } from '@/contexts/UserContext';
+import SubscriptionPaywall from '@/components/SubscriptionPaywall';
 
 const { width } = Dimensions.get('window');
 
 export default function EventDetails() {
   const router = useRouter();
-  const { user, addUpcomingEvent } = useUser();
+  const { user, addUpcomingEvent, markMonthlyFreeEventUsed, checkAndResetMonthlyStatus } = useUser();
   const params = useLocalSearchParams();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
 
   // Parse event data from params
   const eventData = {
@@ -39,6 +53,21 @@ export default function EventDetails() {
     event => event.id === eventData.id
   );
 
+  // Check if premium user can use free event this month
+  const currentMonth = new Date().toISOString().slice(0, 7); // 'YYYY-MM'
+  const canUseFreeEvent = user?.isPremiumSubscriber && 
+                         (!user?.monthlyFreeEventUsed || 
+                          user?.lastMonthlyFreeEventResetDate !== currentMonth);
+
+  // Determine pricing for this user
+  const effectivePrice = canUseFreeEvent ? 0 : eventData.price;
+  const isFreeForUser = effectivePrice === 0;
+
+  // Check and reset monthly status on component mount
+  React.useEffect(() => {
+    checkAndResetMonthlyStatus();
+  }, [checkAndResetMonthlyStatus]);
+
   const handleRegisterAndPay = async () => {
     if (isAlreadyRegistered) {
       return;
@@ -47,16 +76,9 @@ export default function EventDetails() {
     setIsProcessing(true);
 
     try {
-      // RevenueCat integration would go here
-      // Note: This requires local setup with Expo Dev Client
-      // For now, we'll simulate the payment process
-      
-      // TODO: Integrate RevenueCat for actual payments
-      // import Purchases from 'react-native-purchases';
-      // const purchaseResult = await Purchases.purchasePackage(package);
-      
       // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const processingTime = isFreeForUser ? 1000 : 2000; // Faster for free events
+      await new Promise(resolve => setTimeout(resolve, processingTime));
 
       // Create event object for user's upcoming events
       const newEvent = {
@@ -71,13 +93,23 @@ export default function EventDetails() {
       const wasAdded = addUpcomingEvent(newEvent);
 
       if (wasAdded) {
+        // If this was a free premium event, mark the monthly benefit as used
+        if (canUseFreeEvent) {
+          console.log('Marking monthly free event as used');
+          markMonthlyFreeEventUsed();
+        }
+
         // Show success message
+        const successMessage = isFreeForUser 
+          ? 'Registration successful! You\'ve used your monthly free event benefit.'
+          : 'Registration successful! You\'re all set for this event.';
+          
         if (Platform.OS === 'web') {
-          alert('Registration successful! You\'re all set for this event.');
+          alert(successMessage);
         } else {
           Alert.alert(
             'Registration Successful!',
-            'You\'re all set for this event. Check your profile for details.',
+            successMessage + ' Check your profile for details.',
             [{ text: 'OK', onPress: () => router.back() }]
           );
         }
@@ -101,6 +133,10 @@ export default function EventDetails() {
     }
   };
 
+  const handleSubscribePrompt = () => {
+    setShowPaywall(true);
+  };
+
   const generateCheckInCode = () => {
     const codes = ['GOTHIC', 'VERSE', 'STORY', 'MYSTIC', 'PROSE', 'NOVEL'];
     return codes[Math.floor(Math.random() * codes.length)];
@@ -108,6 +144,14 @@ export default function EventDetails() {
 
   return (
     <View style={styles.container}>
+      <SubscriptionPaywall 
+        visible={showPaywall}
+        onClose={() => setShowPaywall(false)}
+        onSubscribed={() => {
+          console.log('User subscribed from event details');
+        }}
+      />
+      
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -128,8 +172,17 @@ export default function EventDetails() {
         >
           <Text style={styles.eventTitle}>{eventData.theme}</Text>
           <View style={styles.priceContainer}>
-            <Text style={styles.priceText}>${eventData.price}</Text>
-            <Text style={styles.priceLabel}>per person</Text>
+            {isFreeForUser ? (
+              <>
+                <Text style={styles.freeText}>FREE</Text>
+                <Text style={styles.priceLabel}>premium benefit</Text>
+              </>
+            ) : (
+              <>
+                <Text style={styles.priceText}>${effectivePrice}</Text>
+                <Text style={styles.priceLabel}>per person</Text>
+              </>
+            )}
           </View>
         </Animated.View>
 
@@ -243,24 +296,97 @@ export default function EventDetails() {
             <View style={styles.paymentSummary}>
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Event Ticket</Text>
-                <Text style={styles.summaryValue}>${eventData.price}.00</Text>
+                <Text style={styles.summaryValue}>
+                  {isFreeForUser ? 'FREE' : `$${effectivePrice}.00`}
+                </Text>
               </View>
               <View style={styles.summaryDivider} />
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryTotal}>Total</Text>
-                <Text style={styles.summaryTotal}>${eventData.price}.00</Text>
+                <Text style={styles.summaryTotal}>
+                  {isFreeForUser ? 'FREE' : `$${effectivePrice}.00`}
+                </Text>
               </View>
             </View>
 
-            <View style={styles.paymentNote}>
-              <AlertCircle size={16} color="#A58E63" />
-              <Text style={styles.paymentNoteText}>
-                Payment processed securely through RevenueCat
-              </Text>
-            </View>
+            {!isFreeForUser && (
+              <View style={styles.paymentNote}>
+                <AlertCircle size={16} color="#A58E63" />
+                <Text style={styles.paymentNoteText}>
+                  Payment processed securely through RevenueCat
+                </Text>
+              </View>
+            )}
           </Animated.View>
         )}
       </ScrollView>
+        {/* Premium Benefits (if user is premium subscriber) */}
+        {user?.isPremiumSubscriber && (
+          <Animated.View 
+            entering={FadeInUp.delay(900).duration(600)}
+            style={styles.premiumBenefitsCard}
+          >
+            <View style={styles.premiumHeader}>
+              <Crown size={24} color="#A58E63" />
+              <Text style={styles.premiumTitle}>Your Premium Benefits</Text>
+            </View>
+            
+            <View style={styles.premiumBenefit}>
+              <Coffee size={18} color="#16A34A" />
+              <Text style={styles.premiumBenefitText}>Complimentary drink included</Text>
+            </View>
+            
+            <View style={styles.premiumBenefit}>
+              <Star size={18} color="#16A34A" />
+              <Text style={styles.premiumBenefitText}>Priority booking access</Text>
+            </View>
+
+            {canUseFreeEvent && (
+              <View style={styles.premiumBenefit}>
+                <CheckCircle size={18} color="#16A34A" />
+                <Text style={styles.premiumBenefitText}>
+                  Monthly free event (available this month)
+                </Text>
+              </View>
+            )}
+
+            {user?.monthlyFreeEventUsed && user?.lastMonthlyFreeEventResetDate === currentMonth && (
+              <View style={styles.premiumBenefit}>
+                <AlertCircle size={18} color="#F59E0B" />
+                <Text style={[styles.premiumBenefitText, { color: '#92400E' }]}>
+                  Monthly free event already used this month
+                </Text>
+              </View>
+            )}
+          </Animated.View>
+        )}
+
+        {/* Subscribe Prompt for Non-Premium Users */}
+        {!user?.isPremiumSubscriber && (
+          <Animated.View 
+            entering={FadeInUp.delay(900).duration(600)}
+            style={styles.subscribePromptCard}
+          >
+            <View style={styles.subscribePromptHeader}>
+              <Crown size={24} color="#A58E63" />
+              <Text style={styles.subscribePromptTitle}>Want This Event Free?</Text>
+            </View>
+            
+            <Text style={styles.subscribePromptText}>
+              Premium members get one free event every month, plus complimentary 
+              drinks and priority booking at all events.
+            </Text>
+            
+            <TouchableOpacity 
+              style={styles.subscribePromptButton}
+              onPress={handleSubscribePrompt}
+            >
+              <Crown size={16} color="#A58E63" />
+              <Text style={styles.subscribePromptButtonText}>Learn More About Premium</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        )}
+
 
       {/* Bottom Action */}
       {!isAlreadyRegistered && (
@@ -278,7 +404,11 @@ export default function EventDetails() {
           >
             <CreditCard size={20} color="#F7F2E7" style={styles.buttonIcon} />
             <Text style={styles.registerButtonText}>
-              {isProcessing ? 'Processing...' : `Register & Pay $${eventData.price}`}
+              {isProcessing 
+                ? 'Processing...' 
+                : isFreeForUser 
+                  ? 'Register for Free' 
+                  : `Register & Pay $${effectivePrice}`}
             </Text>
           </TouchableOpacity>
         </Animated.View>
@@ -344,6 +474,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Literata-Bold',
     fontSize: 28,
     color: '#A58E63',
+  },
+  freeText: {
+    fontFamily: 'Literata-Bold',
+    fontSize: 28,
+    color: '#16A34A',
   },
   priceLabel: {
     fontFamily: 'Cormorant-Regular',
@@ -518,6 +653,81 @@ const styles = StyleSheet.create({
     color: '#92400E',
     marginLeft: 8,
     flex: 1,
+  },
+  premiumBenefitsCard: {
+    marginHorizontal: 24,
+    marginBottom: 24,
+    backgroundColor: '#F0FDF4',
+    borderWidth: 2,
+    borderColor: '#BBF7D0',
+    borderRadius: 16,
+    padding: 20,
+  },
+  premiumHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  premiumTitle: {
+    fontFamily: 'Literata-SemiBold',
+    fontSize: 16,
+    color: '#15803D',
+    marginLeft: 8,
+  },
+  premiumBenefit: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  premiumBenefitText: {
+    fontFamily: 'Cormorant-Regular',
+    fontSize: 14,
+    color: '#16A34A',
+    marginLeft: 8,
+  },
+  subscribePromptCard: {
+    marginHorizontal: 24,
+    marginBottom: 24,
+    backgroundColor: 'rgba(165, 142, 99, 0.1)',
+    borderWidth: 2,
+    borderColor: '#A58E63',
+    borderRadius: 16,
+    padding: 20,
+  },
+  subscribePromptHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  subscribePromptTitle: {
+    fontFamily: 'Literata-SemiBold',
+    fontSize: 16,
+    color: '#4B2E1E',
+    marginLeft: 8,
+  },
+  subscribePromptText: {
+    fontFamily: 'Cormorant-Regular',
+    fontSize: 14,
+    color: '#5C3D2E',
+    lineHeight: 20,
+    marginBottom: 16,
+  },
+  subscribePromptButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F7F2E7',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E3D9C3',
+  },
+  subscribePromptButtonText: {
+    fontFamily: 'Literata-SemiBold',
+    fontSize: 14,
+    color: '#A58E63',
+    marginLeft: 6,
   },
   bottomAction: {
     paddingHorizontal: 24,

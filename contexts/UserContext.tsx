@@ -21,6 +21,9 @@ export interface User {
   upcomingEvents?: UpcomingEvent[];
   quizProgressCurrentQuestion?: number;
   quizProgressAnswers?: number[];
+  isPremiumSubscriber?: boolean;
+  monthlyFreeEventUsed?: boolean;
+  lastMonthlyFreeEventResetDate?: string; // Format: 'YYYY-MM'
 }
 
 interface UserContextType {
@@ -29,6 +32,9 @@ interface UserContextType {
   isLoading: boolean;
   updateUser: (updates: Partial<User>) => void;
   addUpcomingEvent: (event: UpcomingEvent) => boolean;
+  markMonthlyFreeEventUsed: () => void;
+  resetMonthlyFreeEventStatus: () => void;
+  checkAndResetMonthlyStatus: () => void;
   clearUserData: () => Promise<void>;
 }
 
@@ -47,6 +53,9 @@ const createInitialUser = (): User => ({
   upcomingEvents: [],
   quizProgressCurrentQuestion: undefined,
   quizProgressAnswers: undefined,
+  isPremiumSubscriber: false,
+  monthlyFreeEventUsed: false,
+  lastMonthlyFreeEventResetDate: undefined,
 });
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
@@ -143,6 +152,47 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     return true; // Event successfully added
   };
 
+  const markMonthlyFreeEventUsed = () => {
+    const currentMonth = new Date().toISOString().slice(0, 7); // 'YYYY-MM'
+    console.log('UserContext - Marking monthly free event as used for month:', currentMonth);
+    updateUser({ 
+      monthlyFreeEventUsed: true,
+      lastMonthlyFreeEventResetDate: currentMonth
+    });
+  };
+
+  const resetMonthlyFreeEventStatus = () => {
+    const currentMonth = new Date().toISOString().slice(0, 7); // 'YYYY-MM'
+    console.log('UserContext - Resetting monthly free event status for month:', currentMonth);
+    updateUser({ 
+      monthlyFreeEventUsed: false,
+      lastMonthlyFreeEventResetDate: currentMonth
+    });
+  };
+
+  const checkAndResetMonthlyStatus = () => {
+    if (!user) return;
+    
+    const currentMonth = new Date().toISOString().slice(0, 7); // 'YYYY-MM'
+    const lastResetMonth = user.lastMonthlyFreeEventResetDate;
+    
+    console.log('UserContext - Checking monthly status:', {
+      currentMonth,
+      lastResetMonth,
+      monthlyFreeEventUsed: user.monthlyFreeEventUsed
+    });
+
+    // If it's a new month and user previously used their free event, reset it
+    if (lastResetMonth && lastResetMonth !== currentMonth && user.monthlyFreeEventUsed) {
+      console.log('UserContext - New month detected, resetting monthly free event status');
+      resetMonthlyFreeEventStatus();
+    } else if (!lastResetMonth) {
+      // First time setting up monthly tracking
+      console.log('UserContext - First time monthly tracking setup');
+      updateUser({ lastMonthlyFreeEventResetDate: currentMonth });
+    }
+  };
+
   const clearUserData = async () => {
     try {
       console.log('Clearing user data from AsyncStorage...');
@@ -160,7 +210,17 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <UserContext.Provider value={{ user, setUser, isLoading, updateUser, addUpcomingEvent, clearUserData }}>
+    <UserContext.Provider value={{ 
+      user, 
+      setUser, 
+      isLoading, 
+      updateUser, 
+      addUpcomingEvent, 
+      markMonthlyFreeEventUsed,
+      resetMonthlyFreeEventStatus,
+      checkAndResetMonthlyStatus,
+      clearUserData 
+    }}>
       {children}
     </UserContext.Provider>
   );
