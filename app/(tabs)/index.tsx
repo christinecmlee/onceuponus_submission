@@ -107,11 +107,11 @@ export default function InvitesTab() {
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerTitleContainer}>
+          <Text style={styles.headerTitle}>Today's Page</Text>
           <Image 
             source={require('@/assets/images/ChatGPT Image Jun 29, 2025, 07_02_37 PM.png')}
             style={styles.logoImage}
           />
-          <Text style={styles.headerTitle}>Today's Page</Text>
         </View>
         {user?.isPremium && (
           <View style={styles.premiumBadge}>
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
   logoImage: {
     width: 100,
     height: 28,
-    marginRight: 12,
+    marginLeft: 12,
     resizeMode: 'contain',
     tintColor: '#4B2E1E',
   },

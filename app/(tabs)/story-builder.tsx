@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontFamily: 'Playfair-Bold',
-    fontSize: 28,
+    fontSize: 19.6,
     color: '#4B2E1E',
     marginBottom: 4,
   },
