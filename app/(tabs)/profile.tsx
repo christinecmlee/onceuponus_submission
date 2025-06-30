@@ -20,7 +20,7 @@ import {
 } from 'lucide-react-native';
 import { useUser } from '@/contexts/UserContext';
 import { LITERARY_TYPES } from '@/data/quiz';
-import { MockRevenueCatService } from '@/services/MockRevenueCatService';
+import { PaymentService } from '@/services/PaymentService';
 
 export default function ProfileTab() {
   const [refreshing, setRefreshing] = React.useState(false);
@@ -37,8 +37,8 @@ export default function ProfileTab() {
     try {
       console.log('Resetting all app data...');
       
-      // Reset mock RevenueCat subscription status
-      MockRevenueCatService.resetMockSubscription();
+      // Reset payment service subscription status
+      PaymentService.resetMockSubscription();
       
       // Clear all user data from context and storage
       await clearUserData();

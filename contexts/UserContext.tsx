@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { PaymentService } from '@/services/PaymentService';
 
 export interface UpcomingEvent {
   id: string;
@@ -59,11 +60,30 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const loadUserData = async () => {
       try {
         console.log('Loading user data from AsyncStorage...');
+        
+        // Initialize payment service
+        try {
+          await PaymentService.initialize();
+        } catch (error) {
+          console.error('Failed to initialize payment service:', error);
+        }
+        
         const storedUser = await AsyncStorage.getItem('user');
         if (storedUser) {
           const parsedUser = JSON.parse(storedUser);
           console.log('Loaded user data:', parsedUser);
-          setUser(parsedUser);
+          
+          // Check premium status from payment service
+          let isPremium = parsedUser.isPremium || false;
+          try {
+            const customerInfo = await PaymentService.getCustomerInfo();
+            isPremium = !!customerInfo.entitlements.active.premium_access?.isActive;
+            console.log('Premium status from payment service:', isPremium);
+          } catch (error) {
+            console.error('Failed to check premium status:', error);
+          }
+          
+          setUser({ ...parsedUser, isPremium });
         } else {
           console.log('No stored user data found');
           // Initialize with clean state instead of null
@@ -88,6 +108,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         if (user !== null && user.onboardingComplete) {
           console.log('Saving user data to AsyncStorage:', user);
           await AsyncStorage.setItem('user', JSON.stringify(user));
+          
+          // Set user ID in payment service for analytics
+          if (user.id) {
+            try {
+              await PaymentService.setUserId(user.id);
+            } catch (error) {
+              console.error('Failed to set user ID in payment service:', error);
+            }
+          }
         } else {
           console.log('Not saving incomplete user data to AsyncStorage');
         }
@@ -149,6 +178,16 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log('Clearing user data from AsyncStorage...');
       await AsyncStorage.removeItem('user');
+      
+      // Log out from payment service
+      try {
+        await PaymentService.logOut();
+      } catch (error) {
+        console.error('Failed to log out from payment service:', error);
+      }
+      
+      // Reset mock subscription if using mock payments
+      PaymentService.resetMockSubscription();
       
       // Reset to clean initial state instead of null
       const freshUser = createInitialUser();

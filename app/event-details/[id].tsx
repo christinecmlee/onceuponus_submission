@@ -13,7 +13,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import Animated, { FadeInUp, FadeInDown } from 'react-native-reanimated';
 import { ArrowLeft, MapPin, Calendar, Clock, CreditCard, Users, CircleCheck as CheckCircle, CircleAlert as AlertCircle } from 'lucide-react-native';
 import { useUser } from '@/contexts/UserContext';
-import { MockRevenueCatService } from '@/services/MockRevenueCatService';
+import { PaymentService } from '@/services/PaymentService';
 
 const { width } = Dimensions.get('window');
 
@@ -45,8 +45,8 @@ export default function EventDetails() {
   const hasPremiumAccess = user?.isPremium || false;
 
   useEffect(() => {
-    // Initialize mock RevenueCat service
-    MockRevenueCatService.initialize();
+    // Payment service is already initialized in UserContext
+    // We can add additional setup here if needed
   }, []);
 
   const handleRegisterAndPay = async (usePremium = false) => {
@@ -60,7 +60,7 @@ export default function EventDetails() {
       if (usePremium && !hasPremiumAccess) {
         // Purchase premium subscription
         console.log('Purchasing premium subscription...');
-        const purchaseResult = await MockRevenueCatService.purchasePackage('premium_monthly');
+        const purchaseResult = await PaymentService.purchasePackage('premium_monthly');
         
         // Update user with premium status
         updateUser({ isPremium: true });
