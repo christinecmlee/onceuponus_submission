@@ -4,7 +4,6 @@ import { StatusBar } from 'expo-status-bar';
 import { Platform } from 'react-native';
 import { useFonts } from 'expo-font';
 import { SplashScreen } from 'expo-router';
-import Purchases from 'react-native-purchases';
 import {
   Literata_400Regular,
   Literata_600SemiBold,
@@ -41,9 +40,10 @@ export default function RootLayout() {
     'Playfair-Bold': PlayfairDisplay_700Bold,
   });
 
-  // Initialize RevenueCat
+  // Initialize RevenueCat with dynamic imports
   useEffect(() => {
     const initializeRevenueCat = async () => {
+      // Skip RevenueCat initialization entirely on web platform
       if (Platform.OS === 'web') {
         console.log('RevenueCat - Skipping initialization on web platform');
         setIsRevenueCatReady(true);
@@ -51,14 +51,20 @@ export default function RootLayout() {
       }
 
       try {
+        // Check for API key first
         const apiKey = process.env.EXPO_PUBLIC_REVENUECAT_API_KEY;
-        if (!apiKey) {
-          console.error('RevenueCat - API key not found in environment variables');
+        if (!apiKey || apiKey.trim() === '') {
+          console.log('RevenueCat - No API key found, skipping initialization');
           setIsRevenueCatReady(true);
           return;
         }
 
-        console.log('RevenueCat - Initializing SDK...');
+        console.log('RevenueCat - API key found, attempting initialization...');
+        
+        // Dynamically import RevenueCat only when needed and on native platforms
+        const Purchases = await import('react-native-purchases').then(module => module.default);
+        
+        console.log('RevenueCat - Module loaded, configuring SDK...');
         Purchases.setLogLevel(Purchases.LOG_LEVEL.DEBUG);
         
         await Purchases.configure({
@@ -70,7 +76,8 @@ export default function RootLayout() {
         setIsRevenueCatReady(true);
       } catch (error) {
         console.error('RevenueCat - Initialization failed:', error);
-        setIsRevenueCatReady(true); // Continue anyway to prevent app blocking
+        // Always set ready to true to prevent app blocking
+        setIsRevenueCatReady(true);
       }
     };
 
