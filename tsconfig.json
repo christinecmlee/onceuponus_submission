@@ -3,8 +3,7 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
-      "@/*": ["./*"],
-      "react-native-purchases": ["./mocks/react-native-purchases"]
+      "@/*": ["./*"]
     }
   },
   "include": [
@@ -12,7 +11,6 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
-    "nativewind-env.d.ts",
-    "mocks/**/*.ts"
+    "nativewind-env.d.ts"
   ]
 }

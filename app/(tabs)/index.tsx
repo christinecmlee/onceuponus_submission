@@ -15,18 +15,8 @@ import Animated, {
   withTiming,
   interpolate
 } from 'react-native-reanimated';
-import { 
-  RotateCcw, 
-  Calendar, 
-  MapPin, 
-  Clock, 
-  Sparkles, 
-  CircleCheck as CheckCircle,
-  Crown,
-  ArrowRight
-} from 'lucide-react-native';
+import { RotateCcw, Calendar, MapPin, Clock, Sparkles, CircleCheck as CheckCircle } from 'lucide-react-native';
 import { useUser } from '@/contexts/UserContext';
-import SubscriptionPaywall from '@/components/SubscriptionPaywall';
 
 const { width } = Dimensions.get('window');
 
@@ -60,11 +50,10 @@ const MOCK_INVITE = {
 
 export default function InvitesTab() {
   const router = useRouter();
-  const { user, checkAndResetMonthlyStatus } = useUser();
+  const { user } = useUser();
   const [quoteIndex, setQuoteIndex] = useState(0);
   const [showBack, setShowBack] = useState(false);
   const [hasInvite, setHasInvite] = useState(true);
-  const [showPaywall, setShowPaywall] = useState(false);
   const flipAnimation = useSharedValue(0);
 
   const currentQuote = DAILY_QUOTES[quoteIndex];
@@ -73,11 +62,6 @@ export default function InvitesTab() {
   const isAlreadyRegistered = user?.upcomingEvents?.some(
     event => event.id === MOCK_INVITE.id
   ) || false;
-
-  // Check and reset monthly status on component mount
-  useEffect(() => {
-    checkAndResetMonthlyStatus();
-  }, [checkAndResetMonthlyStatus]);
 
   const flipCard = () => {
     flipAnimation.value = withTiming(showBack ? 0 : 180, { duration: 600 });
@@ -120,14 +104,6 @@ export default function InvitesTab() {
 
   return (
     <View style={styles.container}>
-      <SubscriptionPaywall 
-        visible={showPaywall}
-        onClose={() => setShowPaywall(false)}
-        onSubscribed={() => {
-          console.log('User subscribed successfully');
-        }}
-      />
-      
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Today's Chapter</Text>
         <Text style={styles.headerDate}>
@@ -174,32 +150,6 @@ export default function InvitesTab() {
             </Animated.View>
           </View>
         </Animated.View>
-
-        {/* Premium Subscription Prompt (Only for non-premium users) */}
-        {!user?.isPremiumSubscriber && (
-          <Animated.View 
-            entering={FadeInUp.delay(350).duration(600)}
-            style={styles.premiumPromptSection}
-          >
-            <TouchableOpacity 
-              style={styles.premiumPromptCard}
-              onPress={() => setShowPaywall(true)}
-            >
-              <View style={styles.premiumPromptContent}>
-                <Crown size={32} color="#A58E63" />
-                <View style={styles.premiumPromptText}>
-                  <Text style={styles.premiumPromptTitle}>
-                    Join Premium
-                  </Text>
-                  <Text style={styles.premiumPromptSubtitle}>
-                    One free event monthly + exclusive benefits
-                  </Text>
-                </View>
-                <ArrowRight size={20} color="#A58E63" />
-              </View>
-            </TouchableOpacity>
-          </Animated.View>
-        )}
 
         {/* Event Invite Section */}
         {hasInvite && (
@@ -486,39 +436,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   pastEventDescription: {
-    fontFamily: 'Cormorant-Regular',
-    fontSize: 14,
-    color: '#5C3D2E',
-    lineHeight: 18,
-  },
-  premiumPromptSection: {
-    paddingHorizontal: 24,
-    paddingBottom: 10,
-  },
-  premiumPromptCard: {
-    backgroundColor: 'rgba(165, 142, 99, 0.1)',
-    borderWidth: 2,
-    borderColor: '#A58E63',
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  premiumPromptContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 20,
-  },
-  premiumPromptText: {
-    flex: 1,
-    marginLeft: 16,
-    marginRight: 12,
-  },
-  premiumPromptTitle: {
-    fontFamily: 'Literata-SemiBold',
-    fontSize: 18,
-    color: '#4B2E1E',
-    marginBottom: 4,
-  },
-  premiumPromptSubtitle: {
     fontFamily: 'Cormorant-Regular',
     fontSize: 14,
     color: '#5C3D2E',
