@@ -18,7 +18,7 @@ export default function TabLayout() {
         tabBarInactiveTintColor: '#5C3D2E',
         tabBarLabelStyle: {
           fontFamily: 'Literata-SemiBold',
-          fontSize: 12,
+          fontSize: 8.4,
           marginTop: 4,
         },
       }}>

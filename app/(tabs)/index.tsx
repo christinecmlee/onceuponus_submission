@@ -5,7 +5,8 @@ import {
   StyleSheet, 
   ScrollView, 
   TouchableOpacity,
-  Dimensions 
+  Dimensions,
+  Image
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, { 
@@ -105,7 +106,13 @@ export default function InvitesTab() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Today's Chapter</Text>
+        <View style={styles.headerTitleContainer}>
+          <Image 
+            source={require('@/assets/images/ChatGPT Image Jun 29, 2025, 07_02_37 PM.png')}
+            style={styles.logoImage}
+          />
+          <Text style={styles.headerTitle}>Today's Page</Text>
+        </View>
         {user?.isPremium && (
           <View style={styles.premiumBadge}>
             <Text style={styles.premiumBadgeText}>Premium Member</Text>
@@ -261,11 +268,21 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#E3D9C3',
   },
+  headerTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  logoImage: {
+    width: 100,
+    height: 28,
+    marginRight: 12,
+    resizeMode: 'contain',
+    tintColor: '#4B2E1E',
+  },
   headerTitle: {
     fontFamily: 'Playfair-Bold',
-    fontSize: 28,
+    fontSize: 19.6,
     color: '#4B2E1E',
-    marginBottom: 4,
   },
   headerDate: {
     fontFamily: 'Cormorant-Regular',
