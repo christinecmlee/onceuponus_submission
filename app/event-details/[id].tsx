@@ -264,7 +264,7 @@ export default function EventDetails() {
               <View style={styles.premiumOfferCard}>
                 <View style={styles.premiumHeader}>
                   <Text style={styles.premiumBadge}>BEST VALUE</Text>
-                  <Text style={styles.premiumTitle}>Chapter & Verse Premium</Text>
+                  <Text style={styles.premiumTitle}>Once Upon Us Premium</Text>
                   <Text style={styles.premiumPrice}>$30/month</Text>
                 </View>
                 

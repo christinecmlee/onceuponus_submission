@@ -96,7 +96,7 @@ export default function City() {
           onPress={handleContinue}
           disabled={!selectedCity}
         >
-          <Text style={styles.buttonText}>Enter Chapter & Verse</Text>
+          <Text style={styles.buttonText}>Enter Once Upon Us</Text>
         </TouchableOpacity>
       </View>
     </View>

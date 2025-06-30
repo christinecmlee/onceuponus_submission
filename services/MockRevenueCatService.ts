@@ -68,14 +68,14 @@ export class MockRevenueCatService {
 
     const mockOffering: MockOffering = {
       identifier: 'premium_offering',
-      serverDescription: 'Chapter & Verse Premium Membership',
+      serverDescription: 'Once Upon Us Premium Membership',
       packages: [
         {
           identifier: 'premium_monthly',
           packageType: 'MONTHLY',
           product: {
             identifier: 'premium_monthly_30',
-            title: 'Chapter & Verse Premium',
+            title: 'Once Upon Us Premium',
             description: 'Unlimited event access and early booking privileges',
             price: 30.00,
             priceString: '$30.00'
@@ -87,7 +87,7 @@ export class MockRevenueCatService {
         packageType: 'MONTHLY',
         product: {
           identifier: 'premium_monthly_30',
-          title: 'Chapter & Verse Premium',
+          title: 'Once Upon Us Premium',
           description: 'Unlimited event access and early booking privileges',
           price: 30.00,
           priceString: '$30.00'

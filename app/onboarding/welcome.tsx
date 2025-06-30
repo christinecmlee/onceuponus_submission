@@ -14,7 +14,7 @@ export default function Welcome() {
         entering={FadeInUp.delay(300).duration(800)}
         style={styles.headerContainer}
       >
-        <Text style={styles.title}>Chapter & Verse</Text>
+        <Text style={styles.title}>Once Upon Us</Text>
         <Text style={styles.subtitle}>
           A Literary Community for{'\n'}Curious Minds
         </Text>

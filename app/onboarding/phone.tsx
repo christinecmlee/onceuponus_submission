@@ -86,7 +86,7 @@ export default function PhoneVerification() {
         </TouchableOpacity>
 
         <Text style={styles.disclaimer}>
-          By continuing, you agree to receive SMS messages from Chapter & Verse. 
+          By continuing, you agree to receive SMS messages from Once Upon Us. 
           Message and data rates may apply.
         </Text>
       </Animated.View>
