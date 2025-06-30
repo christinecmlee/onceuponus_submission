@@ -26,8 +26,8 @@ export default function ProfileTab() {
   const { user, clearUserData } = useUser();
   const router = useRouter();
 
-  // Mock data for user's literary type
-  const literaryType = LITERARY_TYPES.romantic; // This would come from user data
+  // Get user's actual literary type from context
+  const literaryType = user?.literaryType ? LITERARY_TYPES[user.literaryType] : null;
 
   // Get upcoming events from user context, fallback to empty array
   const upcomingEvents = user?.upcomingEvents || [];
@@ -116,20 +116,48 @@ export default function ProfileTab() {
           entering={FadeInUp.delay(user?.isPremium ? 300 : 200).duration(600)}
           style={styles.typeSection}
         >
-          <View style={styles.typeCard}>
-            <View style={styles.typeHeader}>
-              <Star size={32} color="#A58E63" />
-              <View style={styles.typeInfo}>
-                <Text style={styles.typeName}>{literaryType.name}</Text>
-                <Text style={styles.typeDescription}>{literaryType.description}</Text>
+          {literaryType ? (
+            <View style={styles.typeCard}>
+              <View style={styles.typeHeader}>
+                <Star size={32} color="#A58E63" />
+                <View style={styles.typeInfo}>
+                  <Text style={styles.typeName}>{literaryType.name}</Text>
+                  <Text style={styles.typeDescription}>{literaryType.description}</Text>
+                </View>
               </View>
-            </View>
             
-            <TouchableOpacity style={styles.viewDetailsButton}>
-              <Text style={styles.viewDetailsText}>View Full Profile</Text>
-              <ChevronRight size={16} color="#A58E63" />
-            </TouchableOpacity>
-          </View>
+              <TouchableOpacity 
+                style={styles.viewDetailsButton}
+                onPress={() => router.push({
+                  pathname: '/onboarding/quiz-result',
+                  params: { literaryType: user?.literaryType }
+                })}
+              >
+                <Text style={styles.viewDetailsText}>View Full Profile</Text>
+                <ChevronRight size={16} color="#A58E63" />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.typeCard}>
+              <View style={styles.noTypeHeader}>
+                <BookOpen size={32} color="#A58E63" />
+                <View style={styles.typeInfo}>
+                  <Text style={styles.typeName}>Discover Your Literary Identity</Text>
+                  <Text style={styles.typeDescription}>
+                    Take our quiz to discover your unique reading personality and connect with like-minded literary enthusiasts.
+                  </Text>
+                </View>
+              </View>
+            
+              <TouchableOpacity 
+                style={styles.takeQuizButton}
+                onPress={() => router.push('/onboarding/quiz-intro')}
+              >
+                <Text style={styles.takeQuizText}>Take Literary Quiz</Text>
+                <ChevronRight size={16} color="#F7F2E7" />
+              </TouchableOpacity>
+            </View>
+          )}
         </Animated.View>
 
         {/* Upcoming Events */}
@@ -202,28 +230,30 @@ export default function ProfileTab() {
         </Animated.View>
 
         {/* Literary Insights */}
-        <Animated.View 
-          entering={FadeInUp.delay(user?.isPremium ? 900 : 800).duration(600)}
-          style={styles.section}
-        >
-          <Text style={styles.sectionTitle}>Your Literary Insights</Text>
+        {literaryType && (
+          <Animated.View 
+            entering={FadeInUp.delay(user?.isPremium ? 900 : 800).duration(600)}
+            style={styles.section}
+          >
+            <Text style={styles.sectionTitle}>Your Literary Insights</Text>
           
-          <View style={styles.insightCard}>
-            <Text style={styles.insightTitle}>Core Drive</Text>
-            <Text style={styles.insightText}>{literaryType.coreDrive}</Text>
-          </View>
-
-          <View style={styles.insightCard}>
-            <Text style={styles.insightTitle}>You Connect Well With</Text>
-            <View style={styles.pairingsContainer}>
-              {literaryType.strongPairings.map((pairing, index) => (
-                <View key={index} style={styles.pairingTag}>
-                  <Text style={styles.pairingText}>{pairing}</Text>
-                </View>
-              ))}
+            <View style={styles.insightCard}>
+              <Text style={styles.insightTitle}>Core Drive</Text>
+              <Text style={styles.insightText}>{literaryType.coreDrive}</Text>
             </View>
-          </View>
-        </Animated.View>
+
+            <View style={styles.insightCard}>
+              <Text style={styles.insightTitle}>You Connect Well With</Text>
+              <View style={styles.pairingsContainer}>
+                {literaryType.strongPairings.map((pairing, index) => (
+                  <View key={index} style={styles.pairingTag}>
+                    <Text style={styles.pairingText}>{pairing}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          </Animated.View>
+        )}
 
         {/* Reset Data Section (for testing) */}
         <Animated.View 
@@ -350,6 +380,26 @@ const styles = StyleSheet.create({
     fontFamily: 'Literata-SemiBold',
     fontSize: 14,
     color: '#A58E63',
+    marginRight: 4,
+  },
+  noTypeHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+  },
+  takeQuizButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    backgroundColor: '#A58E63',
+    borderRadius: 12,
+  },
+  takeQuizText: {
+    fontFamily: 'Literata-SemiBold',
+    fontSize: 14,
+    color: '#F7F2E7',
     marginRight: 4,
   },
   section: {
